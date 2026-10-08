@@ -53,7 +53,7 @@ The dashboard sends requests to the Flask API. The API uses Boto3 to communicate
 
 ## 8. Screenshots
 
-Add actual project screenshots in a folder named `screenshots` and link them here.
+![AWS Resource Automation Dashboard](Screenshot%202026-10-08%20152715.png)
 
 ## 9. Security
 
