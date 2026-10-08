@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Resource Automation</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: #111827;
+            color: white;
+            padding: 25px 18px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 35px;
+        }
+
+        .menu {
+            padding: 13px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            color: #cbd5e1;
+            cursor: pointer;
+        }
+
+        .menu:hover {
+            background: #1f2937;
+            color: white;
+        }
+
+        .menu.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .main {
+            flex: 1;
+        }
+
+        .topbar {
+            background: white;
+            padding: 22px 30px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .topbar h1 {
+            font-size: 24px;
+        }
+
+        .container {
+            padding: 30px;
+        }
+
+        .info {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.04);
+        }
+
+        .card-title {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .card-value {
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .panel h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 13px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .status {
+            font-weight: bold;
+        }
+
+        .running {
+            color: #16a34a;
+        }
+
+        .stopped {
+            color: #dc2626;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        button {
+            border: none;
+            padding: 11px 20px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .start {
+            background: #16a34a;
+            color: white;
+        }
+
+        .stop {
+            background: #dc2626;
+            color: white;
+        }
+
+        .refresh {
+            background: #2563eb;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.88;
+        }
+
+        .bucket {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        #message {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        #activityLogs {
+            margin-top: 25px;
+            padding: 24px;
+            background: #111827;
+            border-radius: 12px;
+            color: white;
+        }
+
+        #activityLogs h2 {
+            margin-bottom: 15px;
+        }
+
+        .activity-log-item {
+            padding: 10px;
+            margin-top: 8px;
+            background: #1f2937;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        @media (max-width: 1000px) {
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .sidebar {
+                display: none;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            AWS Resource<br>Automation
+        </div>
+
+       <div class="menu active" onclick="setActive(this); showOverview()">
+	    Overview
+	</div>
+
+	<div class="menu" onclick="setActive(this); showEC2()">
+           EC2 Resources
+	</div>
+
+	<div class="menu" onclick="setActive(this); showS3()">
+           S3 Resources
+	</div>
+
+	<div class="menu" onclick="setActive(this); showHealth()">
+           Resource Health
+	</div>
+
+	<div class="menu" onclick="setActive(this); showActivityLogs()">
+     	   Activity Logs
+	</div>
+
+    </aside>
+
+    <main class="main">
+
+        <div class="topbar">
+            <h1>Resource Overview</h1>
+        </div>
+
+        <div class="container">
+
+            <div class="info">
+
+                <div class="badge">
+                    Region:
+                    <strong id="region">Loading...</strong>
+                </div>
+
+                <div class="badge">
+                    Account:
+                    <strong id="account">Loading...</strong>
+                </div>
+
+                <button class="refresh" onclick="loadStatus()">
+                    Refresh Data
+                </button>
+
+            </div>
+
+            <div class="cards">
+
+                <div class="card">
+                    <div class="card-title">
+                        S3 Buckets
+                    </div>
+
+                    <div class="card-value" id="bucketCount">
+                        -
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        EC2 Instances
+                    </div>
+
+                    <div class="card-value">
+                        1
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        Instance Type
+                    </div>
+
+                    <div class="card-value" id="instanceType">
+                        -
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        System Health
+                    </div>
+
+                    <div class="card-value" id="health">
+                        Loading...
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="content-grid">
+
+                <div class="panel" id="ec2Panel">
+
+                    <h2>EC2 Resource</h2>
+
+                    <div class="row">
+                        <span>Instance ID</span>
+                        <strong id="instanceId">
+                            Loading...
+                        </strong>
+                    </div>
+
+                    <div class="row">
+                        <span>Status</span>
+                        <strong id="instanceState" class="status">
+                            Loading...
+                        </strong>
+                    </div>
+
+                    <div class="row">
+                        <span>Instance Type</span>
+                        <strong id="instanceType2">
+                            Loading...
+                        </strong>
+                    </div>
+
+                    <div class="row">
+                        <span>Region</span>
+                        <strong id="region2">
+                            Loading...
+                        </strong>
+                    </div>
+
+                    <div class="buttons">
+
+                        <button class="start" onclick="startEC2()">
+                            Start EC2
+                        </button>
+
+                        <button class="stop" onclick="stopEC2()">
+                            Stop EC2
+                        </button>
+
+                    </div>
+
+                    <div id="message"></div>
+
+                </div>
+
+                <div class="panel" id="s3Panel">
+
+                    <h2>S3 Resources</h2>
+
+                    <div id="bucketList">
+                        Loading...
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div id="activityLogs">
+
+                <h2>
+                    Activity Logs
+                </h2>
+
+                <div id="logsContainer">
+                    Loading...
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+
+const API = "http://127.0.0.1:5000";
+
+
+async function loadStatus() {
+
+    try {
+
+        const response =
+            await fetch(API + "/api/status");
+
+        const data =
+            await response.json();
+
+        if (!data.success) {
+            throw new Error(data.error);
+        }
+
+        document.getElementById("region").textContent =
+            data.region;
+
+        document.getElementById("region2").textContent =
+            data.region;
+
+        document.getElementById("account").textContent =
+            data.account;
+
+        document.getElementById("bucketCount").textContent =
+            data.s3.bucket_count;
+
+        document.getElementById("instanceType").textContent =
+            data.ec2.type;
+
+        document.getElementById("instanceType2").textContent =
+            data.ec2.type;
+
+        document.getElementById("instanceId").textContent =
+            data.ec2.instance_id;
+
+        const state =
+            data.ec2.state;
+
+        const stateElement =
+            document.getElementById("instanceState");
+
+        stateElement.textContent =
+            state.toUpperCase();
+
+        stateElement.className =
+            "status " + state;
+
+        document.getElementById("health").textContent =
+            state === "running"
+                ? "Healthy"
+                : "Stopped";
+
+        const bucketList =
+            document.getElementById("bucketList");
+
+        bucketList.innerHTML = "";
+
+        data.s3.buckets.forEach(function(bucket) {
+
+            const div =
+                document.createElement("div");
+
+            div.className =
+                "bucket";
+
+            div.textContent =
+                "🪣 " + bucket;
+
+            bucketList.appendChild(div);
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        document.getElementById("message").textContent =
+            "Unable to load AWS data.";
+
+    }
+
+}
+
+
+async function startEC2() {
+
+    const message =
+        document.getElementById("message");
+
+    message.textContent =
+        "Starting EC2...";
+
+    try {
+
+        const response =
+            await fetch(API + "/api/ec2/start", {
+                method: "POST"
+            });
+
+        const data =
+            await response.json();
+
+        if (!data.success) {
+            throw new Error(data.error);
+        }
+
+        message.textContent =
+            "✓ " + data.message;
+
+        setTimeout(loadStatus, 3000);
+
+    }
+
+    catch (error) {
+
+        message.textContent =
+            "Error: " + error.message;
+
+    }
+
+}
+
+
+async function stopEC2() {
+
+    const confirmed =
+        confirm(
+            "Are you sure you want to stop the EC2 instance?"
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+    const message =
+        document.getElementById("message");
+
+    message.textContent =
+        "Stopping EC2...";
+
+    try {
+
+        const response =
+            await fetch(API + "/api/ec2/stop", {
+                method: "POST"
+            });
+
+        const data =
+            await response.json();
+
+        if (!data.success) {
+            throw new Error(data.error);
+        }
+
+        message.textContent =
+            "✓ " + data.message;
+
+        setTimeout(loadStatus, 3000);
+
+    }
+
+    catch (error) {
+
+        message.textContent =
+            "Error: " + error.message;
+
+    }
+
+}
+
+
+async function loadActivityLogs() {
+
+    try {
+
+        const response =
+            await fetch(API + "/api/logs");
+
+        const data =
+            await response.json();
+
+        const logsContainer =
+            document.getElementById("logsContainer");
+
+        logsContainer.innerHTML = "";
+
+        if (
+            !data.success ||
+            data.logs.length === 0
+        ) {
+
+            logsContainer.textContent =
+                "No activity logs found.";
+
+            return;
+        }
+
+        data.logs
+            .slice()
+            .reverse()
+            .forEach(function(log) {
+
+                const item =
+                    document.createElement("div");
+
+                item.className =
+                    "activity-log-item";
+
+                item.textContent =
+                    log;
+
+                logsContainer.appendChild(item);
+
+            });
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Activity log error:",
+            error
+        );
+
+    }
+
+}
+function setActive(element) {
+
+    const menus = document.querySelectorAll(".menu");
+
+    menus.forEach(function(menu) {
+        menu.classList.remove("active");
+    });
+
+    element.classList.add("active");
+}
+
+function showOverview() {
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
+
+
+function showEC2() {
+
+    const panel =
+        document.getElementById("ec2Panel");
+
+    panel.scrollIntoView({
+        behavior: "smooth"
+    });
+
+}
+
+
+function showS3() {
+
+    const panel =
+        document.getElementById("s3Panel");
+
+    panel.scrollIntoView({
+        behavior: "smooth"
+    });
+
+}
+
+
+function showHealth() {
+
+    const health =
+        document.getElementById("health");
+
+    health.scrollIntoView({
+        behavior: "smooth"
+    });
+
+}
+
+function showActivityLogs() {
+
+    const logs =
+        document.getElementById("activityLogs");
+
+    logs.scrollIntoView({
+        behavior: "smooth"
+    });
+}
+
+loadStatus();
+loadActivityLogs();
+setInterval(loadActivityLogs, 5000);
+</script>
+
