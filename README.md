@@ -51,10 +51,6 @@ The dashboard sends requests to the Flask API. The API uses Boto3 to communicate
 * Built a dashboard using Flask and web technologies.
 * Displayed activity logs and AWS resource status.
 
-## 8. Screenshots
-
-![AWS Resource Automation Dashboard](Screenshot%202026-10-08%20152715.png)
-
-## 9. Security
+## 8. Security
 
 AWS credentials are not included in this project. Use secure AWS credential configuration and grant only the permissions required by the application.
